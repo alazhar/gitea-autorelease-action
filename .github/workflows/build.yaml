@@ -2,8 +2,9 @@ name: Build ncc
 
 on:
   push:
-    branches:
+    paths:
       - '**'
+      - '!dist/**'
 
 jobs:
   build:

@@ -26,7 +26,7 @@ async function run () {
       throw new Error(`No version identified extraction with the /${ pattern }/gim pattern.`)
     }
     
-    core.info(`version ${ version } detected`)
+    core.info(`version ${ version } detectedss`)
 
     version = Tag.parseVersion(version)
 
