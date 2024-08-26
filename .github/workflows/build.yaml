@@ -11,6 +11,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+          token: ${{ secrets.token }}
     - name: Prepare Dependency Cache
       uses: actions/cache@v4
       with:
@@ -25,8 +28,6 @@ jobs:
         npm run package
 
     - name: Commit Build Artifacts
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       run: |
         git config --global user.email "actions@github.com"
         git config --global user.name "GitHub Actions"
