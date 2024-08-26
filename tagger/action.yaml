@@ -1,0 +1,26 @@
+name: "gitea-autotag-tagger"
+description: "Automatically detect new tags for new versions"
+author: "Al Azhar"
+branding:
+  icon: "tag"
+  color: "blue"
+inputs:
+  filepath:
+    description: Autotag will look for the appropriate file in in this location (relative to project root).
+    required: true
+  regex_pattern:
+    description: An optional attribute containing the regular expression used to extract the version number.
+    required: true
+  tag_prefix:
+    description: By default, package.json uses semantic versioning, such as "1.0.0". A prefix can be used to add text before the tag name. For example, if tag_prefx is set to "v", then the tag would be labeled as "v1.0.0".
+    required: false
+outputs:
+  tagname:
+    description: Returns the new tag value. Empty if a tag is not created.
+  version:
+    description: The version, as defined in package.json or explicitly set in the input.
+  prerelease:
+    description: Is the new version prerelease.
+runs:
+  using: "node20"
+  main: "dist/tagger/index.js"

@@ -15,7 +15,16 @@ export default class Tag {
     this.prefix = prefix
     this.version = version
     this._tags = null
+    this._message = null
     this._exists = null
+  }
+
+  set sha (value) {
+    this._sha  = value
+  }
+
+  get sha () {
+    return this._sha || ''
   }
 
   get name () {
@@ -105,5 +114,28 @@ export default class Tag {
 
     this._exists = false
     return false
+  }
+
+  async push () {
+    await gitea.repos.repoCreateTag(
+      owner,
+      repo,
+      {
+        tag_name: this.name,
+        target: this._sha
+      }
+    )
+  }
+
+  static parseVersion (version) {
+    const [major, minor, patch, pre] = version.split(".")
+    if (pre) {
+      //version = `${major}.${minor}.${patch}${pre ? (pre > 0 ? "-" + pre  : "") : ""}`
+      version = `${major}.${minor}.${patch}${pre ? (pre > 0 ? "-pre." + pre : "") : ""}`
+      //version = `${major}.${minor}.${patch}${pre ? (pre > 0 ? (pre <= 10 ? "-alpha." : "-beta.") + pre % 10 : "") : ""}`
+    
+      return version
+    }
+    return version
   }
 }

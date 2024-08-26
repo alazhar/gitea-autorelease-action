@@ -1,12 +1,8 @@
 import * as core from '@actions/core'
+import os from 'os'
+import semver from 'semver'
 import Tag from './lib/tag.js'
 import Regex from './lib/regex.js'
-import Release from './lib/release.js'
-
-function getIsTrue(v) {
-  const trueValue = ['true', 'True', 'TRUE']
-  return trueValue.includes(v)
-}
 
 async function run () {
   try {
@@ -28,7 +24,8 @@ async function run () {
     
     core.info(`version ${ version } detected`)
 
-    version = Tag.parseVersion(version)
+    const [major, minor, patch, pre] = version.split(".")
+    version = `${major}.${minor}.${patch}${pre ? (pre == 0 ? "" : "-beta." + pre) : ""}`
 
     core.info(`version translated to ${ version }`)
 
@@ -38,32 +35,38 @@ async function run () {
       version
     )
 
+    // Get min
+    const minVersion = await tag.previous
+    
+    core.info(`Previous version ${ minVersion }`)
+
+    // Ensure that version and minVersion are valid SemVer strings
+    const versionSemVer = semver.coerce(version, { includePrerelease: pre})
+    const minVersionSemVer = semver.coerce(minVersion , { includePrerelease: pre})
+
+    if (!minVersionSemVer) {
+      core.info(`Skipping min version check. ${minVersion} is not valid SemVer`)
+    }
+
+    if(!versionSemVer) {
+      core.info(`Skipping min version check. ${version} is not valid SemVer`)
+    }
+
+    if (minVersionSemVer && versionSemVer && semver.lt(versionSemVer, minVersionSemVer)) {
+      core.info(`Version "${version}" is lower than minimum "${minVersion}"`)
+      return
+    }
+
     core.notice(`Recognized "${version}"`)
     core.setOutput('version', version)
-    core.debug(`Detected version ${version}`)
+    core.debug(` Detected version ${version}`)
 
-    tag.sha = process.env.GITHUB_SHA
-
-    if (!await tag.exists()) {
-      await tag.push()
+    // Check for existance of tag and abort (short circuit) if it already exists.
+    if (await tag.exists()) {
+      core.warning(`"${tag.name}" tag already exists.` + os.EOL)
+      core.setOutput('tagname', '')
+      return
     }
-    
-    const release_name = core.getInput('release_name', { required: false })
-    const draft = core.getInput('draft', { required: false })
-
-    const release = new Release(
-      release_name,
-      tag.name,
-      draft,
-      tag.prerelease
-    )
-    release.body = await tag.message
-    await release.createorupdate()
-
-    const release_attachment = core.getInput('release_attachment', { required: false })
-    const md5sum = getIsTrue(core.getInput("md5sum"))
-    const sha256sum = getIsTrue(core.getInput("sha256sum"))
-    await release.uploadAttachment(release_attachment, md5sum, sha256sum)
 
     // The tag setter will autocorrect the message if necessary.
     core.setOutput('changelog', await tag.message)

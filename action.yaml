@@ -1,0 +1,48 @@
+name: "gitea-autorelease"
+description: "Automatically detect new tags for new versions and create release"
+author: "Al Azhar"
+branding:
+  icon: "tag"
+  color: "green"
+inputs:
+  filepath:
+    description: Autotag will look for the appropriate file in in this location (relative to project root).
+    required: true
+  regex_pattern:
+    description: An optional attribute containing the regular expression used to extract the version number.
+    required: true
+  tag_prefix:
+    description: By default, package.json uses semantic versioning, such as "1.0.0". A prefix can be used to add text before the tag name. For example, if tag_prefx is set to "v", then the tag would be labeled as "v1.0.0".
+    required: false
+  log_template:
+    description: "The commit message template (per commit). Default is `{{number}}) {{message}} ({{author}})\nSHA: {{sha}}\n`"
+    required: false
+  release_name:
+    description: "Gives the release a custom name. Defaults to tag name"
+    required: false
+    default: ${{ github.ref_name }}
+  draft:
+    description: "Creates a draft release. Defaults to false"
+    required: false
+    default: true
+  release_attachment:
+    description: Newline-delimited list of path globs for asset files to upload
+    required: false
+  md5sum:
+    description: 'Publish `.md5` along with artifacts.'
+    required: false
+  sha256sum:
+    description: 'Publish `.sha256` along with artifacts.'
+    required: false
+outputs:
+  tagname:
+    description: Returns the new tag value. Empty if a tag is not created.
+  version:
+    description: The version, as defined in package.json or explicitly set in the input.
+  prerelease:
+    description: Is the new version prerelease.
+  release_url:
+    description: Release location.
+runs:
+  using: "node20"
+  main: "dist/index.js"

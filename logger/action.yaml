@@ -1,0 +1,22 @@
+name: "gitea-autorelease-logger"
+description: "Generate message log between tag"
+author: "Al Azhar"
+branding:
+  icon: "tag"
+  color: "blue"
+inputs:
+  from_tag:
+    description: From tag.
+    required: true
+  to_tag:
+    description: To tag.
+    required: true
+  format:
+    description: Log format".
+    required: false
+outputs:
+  log:
+    description: Message generated
+runs:
+  using: "node20"
+  main: "dist/logger/index.js"
